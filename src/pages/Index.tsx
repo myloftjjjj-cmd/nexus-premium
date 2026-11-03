@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const navy = "#070B1F";
 const panel = "#0E1533";
@@ -77,6 +79,7 @@ export default function Index() {
           <button
             type="button"
             aria-label="Settings"
+            onClick={() => toast("Settings are coming soon")}
             className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300 transition hover:border-[#A855F7]/60"
           >
             Settings
@@ -96,14 +99,15 @@ export default function Index() {
             Describe what you want. Nexus plans, designs, and builds it with you.
           </p>
           <div className="flex gap-3">
-            <button
-              type="button"
+            <Link
+              to="/chat"
               className="rounded-xl bg-gradient-to-r from-[#3DD5FF] to-[#A855F7] px-5 py-2.5 text-sm font-semibold text-[#070B1F] transition hover:brightness-110"
             >
               Start a project
-            </button>
+            </Link>
             <button
               type="button"
+              onClick={() => toast("Voice chat is coming soon")}
               className="rounded-xl border border-[#3DD5FF]/40 px-5 py-2.5 text-sm font-semibold text-[#3DD5FF] transition hover:bg-[#3DD5FF]/10"
             >
               Voice chat
@@ -112,10 +116,11 @@ export default function Index() {
         </section>
 
         {/* Chat preview */}
-        <section
-          className="flex flex-col gap-3 rounded-2xl border border-white/10 p-4"
+        <Link
+          to="/chat"
+          className="flex flex-col gap-3 rounded-2xl border border-white/10 p-4 transition hover:border-[#3DD5FF]/40"
           style={{ background: panel }}
-          aria-label="Chat preview"
+          aria-label="Open chat with Nexus"
         >
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
@@ -137,7 +142,7 @@ export default function Index() {
             <span className="nx-pulse h-2 w-2 rounded-full bg-[#3DD5FF]" />
             Nexus is preparing the next step…
           </div>
-        </section>
+        </Link>
 
         {/* Workflow */}
         <section className="rounded-2xl border border-white/10 p-4" style={{ background: panel }}>
