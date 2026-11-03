@@ -9,7 +9,8 @@ export interface NexusReply {
   artifact?: Artifact;
 }
 
-const GENERATE_RE = /\b(generate|create|make|build|write|design|draft|compose|produce)\b/i;
+const GENERATE_RE =
+  /\b(generate|create|make|build|write|design|draft|compose|produce|develop|code|prepare|give me (a|an|some)|i need (a|an|some)|i want (a|an|some)|can you (make|build|write|create))\b/i;
 const GREETING_RE = /^\s*(hi|hello|hey|good (morning|afternoon|evening))\b/i;
 const HELP_RE = /\b(help|what can you do|how do you work)\b/i;
 const THANKS_RE = /\b(thanks|thank you|thx|appreciate it)\b/i;
@@ -127,25 +128,23 @@ function makeIdeas(topic: string): Artifact {
 
 function makePlan(topic: string): Artifact {
   const t = titleCase(topic);
-  const content = `Plan for ${t}
+  const content = `${t} - 4 Week Plan
 
-1. Define the goal
-   Write one sentence describing what success looks like.
+Week 1: Foundation
+- Goal: Get a clear picture of ${topic} and what success looks like.
+- Result: A one-page summary with the main goal and the first milestone.
 
-2. Know your audience
-   List who will use it and what they need most.
+Week 2: Core work
+- Goal: Do the main part of ${topic} every day, even if it is only 30 minutes.
+- Result: A steady routine and a simple progress log.
 
-3. Build a first version
-   Focus on the core idea only. Keep it simple.
+Week 3: Review
+- Goal: Check progress against the goal and fix the weakest area.
+- Result: A short list of what is working and what to change.
 
-4. Test with real people
-   Gather feedback and note what is confusing.
-
-5. Improve and launch
-   Fix the top issues, then share it with the world.
-
-6. Measure and grow
-   Track results weekly and adjust the plan.`;
+Week 4: Next steps
+- Goal: Lock in the habits and set the next month's targets.
+- Result: A new plan built on what you learned.`;
   return { title: `Plan for ${topic}`, language: "text", content };
 }
 
