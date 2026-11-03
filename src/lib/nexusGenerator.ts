@@ -12,6 +12,12 @@ export interface NexusReply {
 const GENERATE_RE = /\b(generate|create|make|build|write|design|draft|compose|produce)\b/i;
 const GREETING_RE = /^\s*(hi|hello|hey|good (morning|afternoon|evening))\b/i;
 const HELP_RE = /\b(help|what can you do|how do you work)\b/i;
+const THANKS_RE = /\b(thanks|thank you|thx|appreciate it)\b/i;
+const HOW_ARE_YOU_RE = /\b(how are you|how're you|how r u|how's it going|how is it going|what's up|whats up)\b/i;
+const GOODBYE_RE = /^\s*(bye|goodbye|see you|see ya|good night|goodnight|later)\b/i;
+const WHO_RE = /\b(who are you|what are you|your name)\b/i;
+
+const pick = (options: string[]) => options[Math.floor(Math.random() * options.length)];
 
 export function isGenerateRequest(prompt: string): boolean {
   return GENERATE_RE.test(prompt);
@@ -186,15 +192,43 @@ export function respond(prompt: string): NexusReply {
   }
   if (GREETING_RE.test(prompt)) {
     return {
-      text: "Hi, I'm Nexus. Ask me to create something, like \"create a landing page for a bakery\" or \"generate a poem about the sea\".",
+      text: pick([
+        "Hey there! It's great to see you. What would you like to talk about today?",
+        "Hi! I'm Nexus, and I'm happy to chat. What's on your mind?",
+        "Hello! How can I make your day a little easier?",
+      ]),
+    };
+  }
+  if (HOW_ARE_YOU_RE.test(prompt)) {
+    return {
+      text: "I'm doing great, thanks for asking! How about you? Is there anything you'd like to work on?",
+    };
+  }
+  if (THANKS_RE.test(prompt)) {
+    return {
+      text: pick(["You're very welcome! Anything else I can help with?", "Happy to help! What's next?"]),
+    };
+  }
+  if (GOODBYE_RE.test(prompt)) {
+    return {
+      text: "Talk soon! I'll remember what we talked about, so pick up anytime.",
+    };
+  }
+  if (WHO_RE.test(prompt)) {
+    return {
+      text: "I'm Nexus, the AI assistant inside Nexus-premium. I can chat with you, remember useful details, and create things like pages, poems, plans, and more.",
     };
   }
   if (HELP_RE.test(prompt)) {
     return {
-      text: "I can chat with you and create things for you. Try:\n• Create a website for a coffee shop\n• Generate a poem about the moon\n• Make a plan for learning Spanish\n• Write a story about a lost dog\n• Create name ideas for a bike shop\n• Make a color palette for a fitness app",
+      text: "I'm happy to help! Here's what we can do together:\n• Chat about anything on your mind\n• Create a website or landing page\n• Write a poem or a short story\n• Come up with name ideas\n• Make a plan or a color palette\n\nJust tell me what you have in mind.",
     };
   }
   return {
-    text: "I'm here to help. If you want me to make something, start your message with words like \"create\" or \"generate\" and describe it in simple language.",
+    text: pick([
+      "That's interesting! Tell me more about it.",
+      "I see. What would you like to do with that?",
+      "Got it. Want to dig deeper, or should I create something related to it?",
+    ]),
   };
 }
