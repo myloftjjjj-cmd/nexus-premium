@@ -7,18 +7,44 @@ interface NexusLogoProps {
   className?: string;
 }
 
-/** Sets the browser tab / app icon to the Nexus logo. */
+/** Sets the browser tab, Apple home-screen, and installable-app (PWA) icon to the Nexus logo. */
 export function useNexusFavicon() {
   useEffect(() => {
-    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
-    link.href = nexusLogo;
-    link.type = "image/jpeg";
+    const iconUrl = new URL(nexusLogo, window.location.origin).href;
+
+    const setLink = (rel: string, href: string, type?: string) => {
+      let link = document.querySelector<HTMLLinkElement>(`link[rel='${rel}']`);
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = rel;
+        document.head.appendChild(link);
+      }
+      link.href = href;
+      if (type) link.type = type;
+    };
+
+    setLink("icon", iconUrl, "image/jpeg");
+    setLink("apple-touch-icon", iconUrl);
+
+    const manifest = {
+      name: "Nexus-premium",
+      short_name: "Nexus",
+      description: "Nexus-premium, powered by the Nexus AI assistant",
+      start_url: window.location.pathname,
+      display: "standalone",
+      background_color: "#070B1F",
+      theme_color: "#070B1F",
+      icons: [
+        { src: iconUrl, sizes: "512x512", type: "image/jpeg", purpose: "any maskable" },
+      ],
+    };
+    const manifestUrl = URL.createObjectURL(
+      new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }),
+    );
+    setLink("manifest", manifestUrl);
+
     document.title = "Nexus-premium";
+    return () => URL.revokeObjectURL(manifestUrl);
   }, []);
 }
 

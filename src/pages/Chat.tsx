@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { respond, type Artifact } from "@/lib/nexusGenerator";
+import { askNexus, type AIMessage } from "@/lib/nexusAI";
 import NexusLogo from "@/components/NexusLogo";
 import {
   addMemories,
@@ -62,6 +63,8 @@ export default function Chat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const memoriesRef = useRef(memories);
   memoriesRef.current = memories;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -122,13 +125,24 @@ export default function Chat() {
       }
     }
 
-    window.setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { id: nextId.current++, role: "nexus", text: replyText, artifact },
-      ]);
+    const finish = (text: string, art?: Artifact) => {
+      setMessages((prev) => [...prev, { id: nextId.current++, role: "nexus", text, artifact: art }]);
       setThinking(false);
-    }, 900);
+    };
+
+    // Creation requests and memory commands stay local for reliable results.
+    if (artifact || intent) {
+      window.setTimeout(() => finish(replyText, artifact), 500);
+      return;
+    }
+
+    // Everything else goes to the Nexus AI model, with the built-in reply as fallback.
+    const history: AIMessage[] = [...messagesRef.current, userMsg]
+      .slice(-20)
+      .map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+    askNexus(history, current.map((m) => m.text))
+      .then((reply) => finish(reply))
+      .catch(() => finish(replyText));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
