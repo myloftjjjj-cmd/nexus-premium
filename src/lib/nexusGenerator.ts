@@ -28,7 +28,7 @@ function extractTopic(prompt: string): string {
   const cleaned = prompt
     .toLowerCase()
     .replace(
-      /\b(please|can you|could you|i want you to|i want|i need|would you|for me|generate|create|make|build|write|design|draft|compose|produce|a|an|the|some|simple|short|new|my|me)\b/g,
+      /\b(please|can you|could you|i want you to|i want|i need|would you|for me|by yourself|yourself|by myself|myself|this|that|it|generate|create|make|build|write|design|draft|compose|produce|develop|code|a|an|the|some|simple|short|new|my|me)\b/g,
       " ",
     )
     .replace(/[^\p{L}\p{N}\s-]/gu, " ")
@@ -166,10 +166,35 @@ Muted Slate     #64748B  (secondary text)`;
   return { title: `Color palette for ${topic}`, language: "text", content };
 }
 
+function makeCodeStarter(topic: string): Artifact {
+  const t = topic.replace(/"/g, "'");
+  const content = `// ${titleCase(t)} - starter code created by Nexus
+
+const mod = {
+  name: "${t}",
+  version: "1.0.0",
+  enabled: true,
+
+  onLoad() {
+    console.log("${t} is loaded");
+  },
+
+  onUpdate(delta: number) {
+    // Main logic goes here.
+  },
+};
+
+export default mod;`;
+  return { title: `Starter code for ${topic}`, language: "text", content };
+}
+
 export function generateArtifact(prompt: string): Artifact {
   const p = prompt.toLowerCase();
   const topic = extractTopic(prompt);
 
+  if (/\b(mod|mods|modding|game|plugin|extension|addon|add-on|script|app|program|bot|code)\b/.test(p)) {
+    return makeCodeStarter(topic);
+  }
   if (/\b(website|web ?site|landing ?page|web ?page|html|homepage|home page)\b/.test(p)) {
     return makeWebsite(topic);
   }
