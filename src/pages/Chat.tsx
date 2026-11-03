@@ -1,6 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { respond, type Artifact } from "@/lib/nexusGenerator";
+import {
+  addMemories,
+  detectMemoryIntent,
+  extractFacts,
+  findName,
+  forgetMatching,
+  loadMemories,
+  saveMemories,
+  type Memory,
+} from "@/lib/nexusMemory";
 
 type Role = "user" | "nexus";
 
@@ -70,13 +80,21 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [memories, setMemories] = useState<Memory[]>(() => loadMemories());
   const nextId = useRef(1);
-  const replyIndex = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const memoriesRef = useRef(memories);
+  memoriesRef.current = memories;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
+
+  const updateMemories = (list: Memory[]) => {
+    memoriesRef.current = list;
+    setMemories(list);
+    saveMemories(list);
+  };
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -87,12 +105,50 @@ export default function Chat() {
     setInput("");
     setThinking(true);
 
-    const result = respond(trimmed);
+    let replyText: string;
+    let artifact: Artifact | undefined;
+    const current = memoriesRef.current;
+    const intent = detectMemoryIntent(trimmed);
+
+    if (intent?.type === "list") {
+      replyText = current.length
+        ? "Here is what I remember about you:\n• " + current.map((m) => m.text).join("\n• ")
+        : "I don't have any memories saved yet. Tell me something about you, like \"my name is Sam\" or \"remember that I like tea\".";
+    } else if (intent?.type === "clear") {
+      updateMemories([]);
+      replyText = "Done. I've forgotten everything I had saved about you.";
+    } else if (intent?.type === "forget") {
+      const { list, removed } = forgetMatching(current, intent.target);
+      if (removed > 0) {
+        updateMemories(list);
+        replyText = `Okay, I forgot ${removed} memor${removed === 1 ? "y" : "ies"} about "${intent.target}".`;
+      } else {
+        replyText = `I don't have a memory matching "${intent.target}".`;
+      }
+    } else if (intent?.type === "name") {
+      const name = findName(current);
+      replyText = name ? `Your name is ${name}.` : "I don't know your name yet. You can tell me with \"my name is ...\".";
+    } else {
+      const facts = extractFacts(trimmed);
+      const { list, added } = addMemories(current, facts);
+      if (added.length) updateMemories(list);
+
+      const result = respond(trimmed);
+      artifact = result.artifact;
+      replyText = result.text;
+
+      const name = findName(list);
+      if (added.length) {
+        replyText = `Got it, I'll remember: ${added.join("; ")}.` + (artifact ? "\n\n" + replyText : "");
+      } else if (!artifact && name && /\b(hi|hello|hey)\b/i.test(trimmed)) {
+        replyText = `Hi ${name}! ${replyText}`;
+      }
+    }
 
     window.setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { id: nextId.current++, role: "nexus", text: result.text, artifact: result.artifact },
+        { id: nextId.current++, role: "nexus", text: replyText, artifact },
       ]);
       setThinking(false);
     }, 900);
@@ -143,7 +199,7 @@ export default function Chat() {
         >
           + New chat
         </button>
-        <div className="flex-1 text-xs text-slate-500">
+        <div className="flex-1 overflow-y-auto text-xs text-slate-500">
           <p className="mb-2 font-semibold uppercase tracking-wider">Recent</p>
           {messages.length > 0 ? (
             <p className="truncate rounded-lg bg-white/5 px-3 py-2 text-slate-300">
@@ -152,6 +208,43 @@ export default function Chat() {
           ) : (
             <p>No chats yet</p>
           )}
+
+          <div className="mt-6">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-semibold uppercase tracking-wider">Memory ({memories.length})</p>
+              {memories.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => updateMemories([])}
+                  className="text-[11px] text-slate-400 hover:text-[#A855F7]"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+            {memories.length === 0 ? (
+              <p>Nothing saved yet. Tell Nexus something about you.</p>
+            ) : (
+              <ul className="flex flex-col gap-1.5">
+                {memories.map((m) => (
+                  <li
+                    key={m.id}
+                    className="flex items-start justify-between gap-2 rounded-lg bg-white/5 px-3 py-2 text-slate-300"
+                  >
+                    <span className="break-words">{m.text}</span>
+                    <button
+                      type="button"
+                      aria-label={`Forget ${m.text}`}
+                      onClick={() => updateMemories(memories.filter((x) => x.id !== m.id))}
+                      className="shrink-0 text-slate-500 hover:text-[#A855F7]"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <Link to="/" className="text-xs text-slate-400 hover:text-slate-200">
           ← Back to home
