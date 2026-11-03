@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import NexusLogo, { useNexusFavicon } from "@/components/NexusLogo";
 
 const navy = "#070B1F";
 const panel = "#0E1533";
@@ -22,35 +23,8 @@ const workflow = [
   { step: "Publish", done: false },
 ];
 
-function NexusLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <defs>
-        <linearGradient id="nx-grad" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0" stopColor={neonBlue} />
-          <stop offset="1" stopColor={neonPurple} />
-        </linearGradient>
-      </defs>
-      <polygon
-        points="24,2 44,13 44,35 24,46 4,35 4,13"
-        fill="none"
-        stroke="url(#nx-grad)"
-        strokeWidth="2.5"
-      />
-      <path
-        d="M16 34V14L32 34V14"
-        fill="none"
-        stroke="url(#nx-grad)"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <circle cx="24" cy="24" r="3" fill={neonBlue} />
-    </svg>
-  );
-}
-
 export default function Index() {
+  useNexusFavicon();
   return (
     <div
       className="min-h-screen w-full text-slate-100 antialiased"

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { respond, type Artifact } from "@/lib/nexusGenerator";
+import NexusLogo from "@/components/NexusLogo";
 import {
   addMemories,
   detectMemoryIntent,
@@ -48,31 +49,7 @@ async function copyArtifact(a: Artifact) {
 }
 
 function NexusMark({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <defs>
-        <linearGradient id="nx-chat-grad" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0" stopColor="#3DD5FF" />
-          <stop offset="1" stopColor="#A855F7" />
-        </linearGradient>
-      </defs>
-      <polygon
-        points="24,2 44,13 44,35 24,46 4,35 4,13"
-        fill="none"
-        stroke="url(#nx-chat-grad)"
-        strokeWidth="2.5"
-      />
-      <path
-        d="M16 34V14L32 34V14"
-        fill="none"
-        stroke="url(#nx-chat-grad)"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <circle cx="24" cy="24" r="3" fill="#3DD5FF" />
-    </svg>
-  );
+  return <NexusLogo size={size} />;
 }
 
 export default function Chat() {
