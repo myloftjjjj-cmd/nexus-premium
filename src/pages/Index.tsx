@@ -73,7 +73,7 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <NexusLogo size={36} />
             <span className="text-lg font-semibold tracking-wide">
-              Nexus<span className="text-[#3DD5FF]">-premium</span>
+              Nexus<span className="text-[#3DD5FF]"> AI</span>
             </span>
           </div>
           <button
