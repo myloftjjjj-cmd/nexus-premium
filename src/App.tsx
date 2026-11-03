@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import { useNexusFavicon } from "@/components/NexusLogo";
+import SplashScreen from "@/components/SplashScreen";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <SplashScreen />
       <Toaster />
       <Sonner />
       <BrowserRouter>
