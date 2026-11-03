@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { respond, type Artifact } from "@/lib/nexusGenerator";
 
 type Role = "user" | "nexus";
 
@@ -7,20 +8,34 @@ interface ChatMessage {
   id: number;
   role: Role;
   text: string;
+  artifact?: Artifact;
 }
 
 const starters = [
-  "Plan a landing page for my bakery",
-  "Write a short product description",
-  "Suggest a color palette for a fitness app",
-  "Summarize how to launch a website",
+  "Create a landing page for my bakery",
+  "Generate a poem about the sea",
+  "Create name ideas for a bike shop",
+  "Make a color palette for a fitness app",
 ];
 
-const replies = [
-  "Great idea. Here is a simple plan: start with a hero section, add three key features, then finish with a clear call to action.",
-  "Sure. Tell me a bit more about your audience and I will tailor the next step for you.",
-  "Here is a draft you can build on. I can refine the tone, length, or style whenever you like.",
-];
+function downloadArtifact(a: Artifact) {
+  const ext = a.language === "html" ? "html" : "txt";
+  const blob = new Blob([a.content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${a.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${ext}`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function copyArtifact(a: Artifact) {
+  try {
+    await navigator.clipboard.writeText(a.content);
+  } catch {
+    /* clipboard unavailable */
+  }
+}
 
 function NexusMark({ size = 28 }: { size?: number }) {
   return (
@@ -72,11 +87,13 @@ export default function Chat() {
     setInput("");
     setThinking(true);
 
-    const reply = replies[replyIndex.current % replies.length];
-    replyIndex.current++;
+    const result = respond(trimmed);
 
     window.setTimeout(() => {
-      setMessages((prev) => [...prev, { id: nextId.current++, role: "nexus", text: reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: nextId.current++, role: "nexus", text: result.text, artifact: result.artifact },
+      ]);
       setThinking(false);
     }, 900);
   };
@@ -220,6 +237,34 @@ export default function Chat() {
                     }`}
                   >
                     {m.text}
+                    {m.artifact && (
+                      <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-[#070B1F]">
+                        <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
+                          <span className="truncate text-xs font-medium text-slate-300">
+                            {m.artifact.title}
+                          </span>
+                          <div className="flex shrink-0 gap-3 text-xs">
+                            <button
+                              type="button"
+                              onClick={() => copyArtifact(m.artifact!)}
+                              className="text-slate-400 transition hover:text-[#3DD5FF]"
+                            >
+                              Copy
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadArtifact(m.artifact!)}
+                              className="text-slate-400 transition hover:text-[#A855F7]"
+                            >
+                              Download
+                            </button>
+                          </div>
+                        </div>
+                        <pre className="max-h-64 overflow-auto whitespace-pre-wrap p-3 text-xs text-slate-300">
+                          {m.artifact.content}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
